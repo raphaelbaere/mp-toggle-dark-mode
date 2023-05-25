@@ -1,5 +1,5 @@
 "use client"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './globals.css';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import xwing1 from '../../public/x-wing1.png';
@@ -7,6 +7,18 @@ import republicCrusader1 from '../../public/republicCrusader.png';
 import Image from 'next/image';
 import tieFighter1 from '../../public/tieFighter1.png';
 import empireCrusader1 from '../../public/empireCrusader1.png';
+import { Howl } from 'howler';
+
+const lightup = new Howl({
+  src: ['/audios/power-up.mp3'],
+});
+
+const lightdown = new Howl({
+  src: ['/audios/power-down.mp3'],
+});
+
+Howler.volume(0.3); 
+
 
 
 export default function Home() {
@@ -14,52 +26,48 @@ export default function Home() {
   const [email, setEmail] = useState('');
   const [emailHelperText, setEmailHelperText] = useState('');
   const [password, setPassword] = useState('');
-  const storedLightMode = localStorage.getItem('lightmode');
-  const storedDarkMode = localStorage.getItem('darkmode');
+  let storedLightMode;
+  let storedDarkMode;
+  if (typeof window !== "undefined") {
+    storedLightMode = window.localStorage.getItem('lightmode');
+    storedDarkMode = window.localStorage.getItem('darkmode');
+  }
   const initialLightMode = storedLightMode ? JSON.parse(storedLightMode) : true;
   const initialDarkMode = storedDarkMode ? JSON.parse(storedDarkMode) : false;
   const [passwordHelperText, setPasswordHelperText] = useState('');
   const [isLightMode, setIsLightMode] = useState(storedLightMode ? initialLightMode : true);
   const [lightsaber, setLightSaber] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(storedDarkMode ? initialDarkMode : false);
-  const [audio, setAudio] = useState(new Audio('/audios/power-down.mp3'));
   const [volume] = useState(0.1);
+  
 
   const handleModeToggle = () => {
     if (!isLightMode) {
       if (lightsaber === 'light-up') {
         setLightSaber('light-shrink');
-        audio.volume = volume;
-        audio.play();
-        setAudio(new Audio('/audios/power-up.mp3'));
+        lightdown.play();
       } else {
-        audio.volume = volume;
-        audio.play();
-        setAudio(new Audio('/audios/power-down.mp3'));
+        lightup.play();
         setLightSaber('light-up')
       }
       setIsLightMode(!isLightMode);
-      localStorage.setItem('lightmode', JSON.stringify(!isLightMode));
+      window.localStorage.setItem('lightmode', JSON.stringify(!isLightMode));
       return;
     }
     if (isLightMode) {
       setLightSaber('light-shrink');
-      audio.volume = volume;
-      audio.play();
-      setAudio(new Audio('/audios/power-up.mp3'));
+      lightdown.play();
       setIsLightMode(!isLightMode);
-      localStorage.setItem('lightmode', JSON.stringify(!isLightMode));
+      window.localStorage.setItem('lightmode', JSON.stringify(!isLightMode));
       return;
     }
   };
   
   const handleAnimationEnd = () => {
     if (lightsaber === 'light-shrink') {
-      audio.volume = volume;
-      audio.play();
-      setAudio(new Audio('/audios/power-down.mp3'));
+      lightup.play();
       setIsDarkMode(!isDarkMode);
-      localStorage.setItem('darkmode', JSON.stringify(!isDarkMode));
+      window.localStorage.setItem('darkmode', JSON.stringify(!isDarkMode));
       setLightSaber('light-up');
     }
   }
